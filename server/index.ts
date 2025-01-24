@@ -1,6 +1,9 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import MemoryStore from "memorystore";
+import { drizzle } from "drizzle-orm/neon-serverless";
+import { migrate } from "drizzle-orm/neon-serverless/migrator";
+import { db } from "@db";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -24,7 +27,7 @@ app.use(
       httpOnly: true,
       sameSite: 'lax'
     },
-    name: 'sid', // Set a specific session ID name
+    name: 'sid',
     secret: process.env.SESSION_SECRET || 'development_secret',
     resave: false,
     saveUninitialized: false,
@@ -44,6 +47,7 @@ app.use((req, _res, next) => {
   next();
 });
 
+// Logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -74,25 +78,54 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
-  const server = registerRoutes(app);
+async function runMigrations() {
+  try {
+    log("Running database migrations...");
+    // Create the migrations table if it doesn't exist
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS _drizzle_migrations (
+        id SERIAL PRIMARY KEY,
+        hash text NOT NULL,
+        created_at timestamptz NOT NULL
+      );
+    `);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    console.error('Global error handler:', err);
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-  });
-
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
+    // Run migrations
+    await migrate(db, { migrationsFolder: "./migrations" });
+    log("Database migrations completed successfully");
+  } catch (error) {
+    console.error("Error running migrations:", error);
+    throw error;
   }
+}
 
-  const PORT = 5000;
-  server.listen(PORT, "0.0.0.0", () => {
-    log(`serving on port ${PORT}`);
-  });
+(async () => {
+  try {
+    // Run migrations before starting the server
+    await runMigrations();
+
+    const server = registerRoutes(app);
+
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      console.error('Global error handler:', err);
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+
+      res.status(status).json({ message });
+    });
+
+    if (app.get("env") === "development") {
+      await setupVite(app, server);
+    } else {
+      serveStatic(app);
+    }
+
+    const PORT = 5000;
+    server.listen(PORT, "0.0.0.0", () => {
+      log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
 })();
