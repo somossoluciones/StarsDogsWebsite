@@ -1,11 +1,56 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
-import { puppies } from "@db/schema";
+import { puppies, users } from "@db/schema";
 import { eq } from "drizzle-orm";
 import { isAuthenticated, isAdmin } from "./middleware/auth";
+import bcrypt from "bcryptjs";
 
 export function registerRoutes(app: Express): Server {
+  // Authentication routes
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      const user = await db.query.users.findFirst({
+        where: eq(users.username, username)
+      });
+
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      req.session.userId = user.id;
+      res.json({ message: "Logged in successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to login" });
+    }
+  });
+
+  app.post('/api/auth/logout', (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Failed to logout" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  app.get('/api/auth/check', isAuthenticated, async (req, res) => {
+    try {
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, req.session.userId!)
+      });
+      res.json({ user });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to check auth status" });
+    }
+  });
+
   // Public API routes
   app.get('/api/puppies', async (_req, res) => {
     try {

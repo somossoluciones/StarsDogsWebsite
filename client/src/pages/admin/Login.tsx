@@ -5,6 +5,13 @@ import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
@@ -18,7 +25,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function Login() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  
+
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   });
@@ -31,11 +38,11 @@ export default function Login() {
         body: JSON.stringify(data),
         credentials: "include",
       });
-      
+
       if (!res.ok) {
         throw new Error(await res.text());
       }
-      
+
       return res.json();
     },
     onSuccess: () => {
@@ -61,30 +68,41 @@ export default function Login() {
           <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <Input
-                placeholder="Username"
-                {...form.register("username")}
-                error={form.formState.errors.username?.message}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input placeholder="Username" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div>
-              <Input
-                type="password"
-                placeholder="Password"
-                {...form.register("password")}
-                error={form.formState.errors.password?.message}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input type="password" placeholder="Password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={loginMutation.isPending}
-            >
-              {loginMutation.isPending ? "Logging in..." : "Login"}
-            </Button>
-          </form>
+              <Button 
+                type="submit" 
+                className="w-full"
+                disabled={loginMutation.isPending}
+              >
+                {loginMutation.isPending ? "Logging in..." : "Login"}
+              </Button>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>
