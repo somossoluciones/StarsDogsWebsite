@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Form,
   FormControl,
@@ -12,6 +13,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import {
   Dialog,
@@ -61,10 +63,10 @@ export function PuppyDialog({ puppy, trigger, open, onOpenChange }: Props) {
 
   const puppyMutation = useMutation({
     mutationFn: async (data: PuppyForm) => {
-      const url = puppy 
+      const url = puppy
         ? `/api/admin/puppies/${puppy.id}`
         : "/api/admin/puppies";
-      
+
       const res = await fetch(url, {
         method: puppy ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
@@ -119,8 +121,11 @@ export function PuppyDialog({ puppy, trigger, open, onOpenChange }: Props) {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder="Enter puppy's name" />
                   </FormControl>
+                  <FormDescription>
+                    The name that will be displayed to potential buyers.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -132,8 +137,11 @@ export function PuppyDialog({ puppy, trigger, open, onOpenChange }: Props) {
                 <FormItem>
                   <FormLabel>Age</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder="e.g., 8 weeks" />
                   </FormControl>
+                  <FormDescription>
+                    Current age of the puppy.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -145,8 +153,11 @@ export function PuppyDialog({ puppy, trigger, open, onOpenChange }: Props) {
                 <FormItem>
                   <FormLabel>Color</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder="e.g., Black & Tan" />
                   </FormControl>
+                  <FormDescription>
+                    The puppy's coat color and pattern.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -158,8 +169,15 @@ export function PuppyDialog({ puppy, trigger, open, onOpenChange }: Props) {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea {...field} />
+                    <Textarea
+                      {...field}
+                      placeholder="Enter a detailed description of the puppy"
+                      className="min-h-[100px]"
+                    />
                   </FormControl>
+                  <FormDescription>
+                    Additional details about the puppy's personality, training, etc.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -171,21 +189,47 @@ export function PuppyDialog({ puppy, trigger, open, onOpenChange }: Props) {
                 <FormItem>
                   <FormLabel>Image URL</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input
+                      {...field}
+                      placeholder="https://example.com/puppy-image.jpg"
+                      type="url"
+                    />
                   </FormControl>
+                  <FormDescription>
+                    A direct link to the puppy's photo. Must be a valid URL.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button 
-              type="submit" 
+            <FormField
+              control={form.control}
+              name="available"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Available</FormLabel>
+                    <FormDescription>
+                      Mark if this puppy is currently available for purchase.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
               className="w-full"
               disabled={puppyMutation.isPending}
             >
-              {puppyMutation.isPending 
-                ? "Saving..." 
-                : puppy ? "Update Puppy" : "Add Puppy"
-              }
+              {puppyMutation.isPending
+                ? "Saving..."
+                : puppy ? "Update Puppy" : "Add Puppy"}
             </Button>
           </form>
         </Form>
