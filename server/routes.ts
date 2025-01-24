@@ -11,22 +11,29 @@ export function registerRoutes(app: Express): Server {
   app.post('/api/auth/login', async (req, res) => {
     try {
       const { username, password } = req.body;
+      console.log(`Login attempt for username: ${username}`);
+
       const user = await db.query.users.findFirst({
         where: eq(users.username, username)
       });
 
       if (!user) {
+        console.log('User not found');
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
       const isValid = await bcrypt.compare(password, user.password);
+      console.log(`Password validation result: ${isValid}`);
+
       if (!isValid) {
+        console.log('Invalid password');
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
       req.session.userId = user.id;
       res.json({ message: "Logged in successfully" });
     } catch (error) {
+      console.error('Login error:', error);
       res.status(500).json({ message: "Failed to login" });
     }
   });

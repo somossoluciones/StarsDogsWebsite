@@ -10,6 +10,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(1, "Password is required"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -46,7 +47,8 @@ export default function Login() {
       });
 
       if (!res.ok) {
-        throw new Error(await res.text());
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Login failed");
       }
 
       return res.json();
@@ -54,7 +56,7 @@ export default function Login() {
     onSuccess: () => {
       setLocation("/admin/dashboard");
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
         description: error.message,
@@ -81,8 +83,9 @@ export default function Login() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="Username" {...field} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -93,8 +96,9 @@ export default function Login() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Password" {...field} />
+                      <Input type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
