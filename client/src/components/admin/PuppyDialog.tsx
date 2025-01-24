@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import type { SelectPuppy } from "@db/schema";
+import { LineageTree } from "@/components/lineage/LineageTree";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const puppySchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -106,133 +108,146 @@ export function PuppyDialog({ puppy, trigger, open, onOpenChange }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="max-w-4xl h-[80vh]">
         <DialogHeader>
           <DialogTitle>
             {puppy ? "Edit Puppy" : "Add New Puppy"}
           </DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Enter puppy's name" />
-                  </FormControl>
-                  <FormDescription>
-                    The name that will be displayed to potential buyers.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="age"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Age</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="e.g., 8 weeks" />
-                  </FormControl>
-                  <FormDescription>
-                    Current age of the puppy.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="color"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Color</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="e.g., Black & Tan" />
-                  </FormControl>
-                  <FormDescription>
-                    The puppy's coat color and pattern.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="Enter a detailed description of the puppy"
-                      className="min-h-[100px]"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Additional details about the puppy's personality, training, etc.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="imageUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Image URL</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="https://example.com/puppy-image.jpg"
-                      type="url"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    A direct link to the puppy's photo. Must be a valid URL.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="available"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Available</FormLabel>
-                    <FormDescription>
-                      Mark if this puppy is currently available for purchase.
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={puppyMutation.isPending}
-            >
-              {puppyMutation.isPending
-                ? "Saving..."
-                : puppy ? "Update Puppy" : "Add Puppy"}
-            </Button>
-          </form>
-        </Form>
+        <Tabs defaultValue="details" className="h-full">
+          <TabsList>
+            <TabsTrigger value="details">Details</TabsTrigger>
+            {puppy && <TabsTrigger value="lineage">Lineage</TabsTrigger>}
+          </TabsList>
+          <TabsContent value="details" className="h-full">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter puppy's name" />
+                      </FormControl>
+                      <FormDescription>
+                        The name that will be displayed to potential buyers.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="age"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Age</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="e.g., 8 weeks" />
+                      </FormControl>
+                      <FormDescription>
+                        Current age of the puppy.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="color"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Color</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="e.g., Black & Tan" />
+                      </FormControl>
+                      <FormDescription>
+                        The puppy's coat color and pattern.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="Enter a detailed description of the puppy"
+                          className="min-h-[100px]"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Additional details about the puppy's personality, training, etc.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Image URL</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="https://example.com/puppy-image.jpg"
+                          type="url"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        A direct link to the puppy's photo. Must be a valid URL.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="available"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Available</FormLabel>
+                        <FormDescription>
+                          Mark if this puppy is currently available for purchase.
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={puppyMutation.isPending}
+                >
+                  {puppyMutation.isPending
+                    ? "Saving..."
+                    : puppy ? "Update Puppy" : "Add Puppy"}
+                </Button>
+              </form>
+            </Form>
+          </TabsContent>
+          {puppy && (
+            <TabsContent value="lineage" className="h-full">
+              <LineageTree puppyId={puppy.id} />
+            </TabsContent>
+          )}
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

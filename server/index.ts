@@ -3,6 +3,7 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { migrate } from "drizzle-orm/neon-serverless/migrator";
+import { sql } from "drizzle-orm";
 import { db } from "@db";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";

@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
-import { puppies, users } from "@db/schema";
-import { eq } from "drizzle-orm";
+import { puppies, users, lineageRelationships } from "@db/schema";
+import { eq, and } from "drizzle-orm";
 import { isAuthenticated, isAdmin } from "./middleware/auth";
 import bcrypt from "bcryptjs";
 
@@ -112,6 +112,85 @@ export function registerRoutes(app: Express): Server {
       res.json({ message: "Puppy deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete puppy" });
+    }
+  });
+
+  // Lineage API routes
+  app.get('/api/puppies/:id/lineage', async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      // Get the puppy's parents
+      const parents = await db.query.lineageRelationships.findMany({
+        where: eq(lineageRelationships.puppyId, parseInt(id)),
+        with: {
+          parent: true,
+        },
+      });
+
+      // Get the puppy's children
+      const children = await db.query.lineageRelationships.findMany({
+        where: eq(lineageRelationships.parentId, parseInt(id)),
+        with: {
+          puppy: true,
+        },
+      });
+
+      // Format the data for the tree visualization
+      const lineageData = {
+        puppy: await db.query.puppies.findFirst({
+          where: eq(puppies.id, parseInt(id))
+        }),
+        parents: parents.map(p => ({
+          ...p.parent,
+          relationshipType: p.relationshipType
+        })),
+        children: children.map(c => ({
+          ...c.puppy,
+          relationshipType: c.relationshipType
+        }))
+      };
+
+      res.json(lineageData);
+    } catch (error) {
+      console.error('Error fetching lineage:', error);
+      res.status(500).json({ message: "Failed to fetch lineage data" });
+    }
+  });
+
+  app.post('/api/admin/lineage', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { puppyId, parentId, relationshipType } = req.body;
+
+      // Validate relationship type
+      if (!['father', 'mother'].includes(relationshipType)) {
+        return res.status(400).json({ message: "Invalid relationship type" });
+      }
+
+      // Check if relationship already exists
+      const existingRelation = await db.query.lineageRelationships.findFirst({
+        where: and(
+          eq(lineageRelationships.puppyId, puppyId),
+          eq(lineageRelationships.parentId, parentId)
+        ),
+      });
+
+      if (existingRelation) {
+        return res.status(400).json({ message: "Relationship already exists" });
+      }
+
+      const result = await db.insert(lineageRelationships)
+        .values({
+          puppyId,
+          parentId,
+          relationshipType,
+        })
+        .returning();
+
+      res.json(result[0]);
+    } catch (error) {
+      console.error('Error creating lineage relationship:', error);
+      res.status(500).json({ message: "Failed to create lineage relationship" });
     }
   });
 
