@@ -22,12 +22,18 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
+const defaultValues: LoginForm = {
+  username: "",
+  password: "",
+};
+
 export default function Login() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
+    defaultValues,
   });
 
   const loginMutation = useMutation({
