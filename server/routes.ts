@@ -82,8 +82,8 @@ export function registerRoutes(app: Express): Server {
 
   app.post('/api/admin/puppies', isAuthenticated, isAdmin, async (req, res) => {
     try {
-      const newPuppy = await db.insert(puppies).values(req.body);
-      res.json(newPuppy);
+      const result = await db.insert(puppies).values(req.body).returning();
+      res.json(result[0]);
     } catch (error) {
       res.status(500).json({ message: "Failed to create puppy" });
     }
@@ -92,12 +92,26 @@ export function registerRoutes(app: Express): Server {
   app.put('/api/admin/puppies/:id', isAuthenticated, isAdmin, async (req, res) => {
     const { id } = req.params;
     try {
-      await db.update(puppies)
+      const result = await db
+        .update(puppies)
         .set(req.body)
-        .where(eq(puppies.id, parseInt(id)));
-      res.json({ message: "Puppy updated successfully" });
+        .where(eq(puppies.id, parseInt(id)))
+        .returning();
+      res.json(result[0]);
     } catch (error) {
       res.status(500).json({ message: "Failed to update puppy" });
+    }
+  });
+
+  app.delete('/api/admin/puppies/:id', isAuthenticated, isAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+      await db
+        .delete(puppies)
+        .where(eq(puppies.id, parseInt(id)));
+      res.json({ message: "Puppy deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete puppy" });
     }
   });
 
