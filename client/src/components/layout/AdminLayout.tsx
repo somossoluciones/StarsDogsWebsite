@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Loader2, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface Props {
   children: React.ReactNode;
@@ -9,10 +11,38 @@ interface Props {
 
 export function AdminLayout({ children }: Props) {
   const [, setLocation] = useLocation();
-  
+  const { toast } = useToast();
+
   const { isLoading, isError } = useQuery({
     queryKey: ["/api/auth/check"],
     retry: false,
+  });
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to logout");
+      }
+    },
+    onSuccess: () => {
+      setLocation("/admin/login");
+      toast({
+        title: "Success",
+        description: "Logged out successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to logout",
+        variant: "destructive",
+      });
+    },
   });
 
   useEffect(() => {
@@ -34,10 +64,25 @@ export function AdminLayout({ children }: Props) {
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                <span className="text-xl font-bold">Admin Dashboard</span>
-              </div>
+            <div className="flex items-center">
+              <span className="text-xl font-bold text-primary">Admin Dashboard</span>
+            </div>
+            <div className="flex items-center">
+              <Button
+                variant="ghost"
+                className="text-gray-600 hover:text-gray-900"
+                onClick={() => logoutMutation.mutate()}
+                disabled={logoutMutation.isPending}
+              >
+                {logoutMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </div>
