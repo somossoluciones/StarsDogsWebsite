@@ -15,21 +15,21 @@ export function Navbar() {
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
         <Link href="/">
-          <a className="text-2xl font-bold text-gold">StarsDogs</a>
+          <span className="text-2xl font-bold text-[#D4AF37] cursor-pointer">StarsDogs</span>
         </Link>
-        
+
         <div className="flex items-center gap-8">
           <Link href="/">
-            <a className="hover:text-[#D4AF37] transition-colors">{t('nav.home')}</a>
+            <span className="hover:text-[#D4AF37] transition-colors cursor-pointer">{t('nav.home')}</span>
           </Link>
           <Link href="/puppies">
-            <a className="hover:text-[#D4AF37] transition-colors">{t('nav.puppies')}</a>
+            <span className="hover:text-[#D4AF37] transition-colors cursor-pointer">{t('nav.puppies')}</span>
           </Link>
           <Link href="/gallery">
-            <a className="hover:text-[#D4AF37] transition-colors">{t('nav.gallery')}</a>
+            <span className="hover:text-[#D4AF37] transition-colors cursor-pointer">{t('nav.gallery')}</span>
           </Link>
           <Link href="/contact">
-            <a className="hover:text-[#D4AF37] transition-colors">{t('nav.contact')}</a>
+            <span className="hover:text-[#D4AF37] transition-colors cursor-pointer">{t('nav.contact')}</span>
           </Link>
           <LanguageSwitch />
         </div>
