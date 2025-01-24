@@ -21,8 +21,11 @@ app.use(
     cookie: {
       maxAge: 86400000, // 24 hours
       secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      sameSite: 'lax'
     },
-    secret: "your-secret-key", // In production, use a proper secret from env
+    name: 'sid', // Set a specific session ID name
+    secret: process.env.SESSION_SECRET || 'development_secret',
     resave: false,
     saveUninitialized: false,
     store: new MemoryStoreSession({
@@ -30,6 +33,16 @@ app.use(
     }),
   })
 );
+
+// Session debug middleware
+app.use((req, _res, next) => {
+  console.log('Session Debug:', {
+    id: req.session.id,
+    userId: req.session.userId,
+    cookie: req.session.cookie
+  });
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -65,11 +78,11 @@ app.use((req, res, next) => {
   const server = registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    console.error('Global error handler:', err);
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
     res.status(status).json({ message });
-    throw err;
   });
 
   if (app.get("env") === "development") {
