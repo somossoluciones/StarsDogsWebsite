@@ -20,10 +20,17 @@ export function FeaturedPuppies() {
           {puppyImages.map((image, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.2 }}
-              viewport={{ once: true }}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ 
+                duration: 0.5,
+                ease: "easeOut",
+                delay: index * 0.15
+              }}
+              viewport={{ 
+                once: true,
+                margin: "50px"
+              }}
             >
               <Card>
                 <CardContent className="p-0">

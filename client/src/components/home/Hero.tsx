@@ -16,23 +16,51 @@ export function Hero() {
         }}
       />
       
-      <motion.div
-        className="relative text-center text-white z-10"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-      >
-        <h1 className="text-6xl font-bold mb-4">{t('hero.title')}</h1>
-        <p className="text-2xl mb-8">{t('hero.subtitle')}</p>
-        <Link href="/puppies">
-          <Button 
-            size="lg"
-            className="bg-[#D4AF37] hover:bg-[#B89530] text-white"
-          >
-            {t('hero.cta')}
-          </Button>
-        </Link>
-      </motion.div>
+      <div className="relative text-center text-white z-10">
+        <motion.h1 
+          className="text-6xl font-bold mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ 
+            duration: 0.5,
+            ease: "easeOut"
+          }}
+        >
+          {t('hero.title')}
+        </motion.h1>
+        
+        <motion.p 
+          className="text-2xl mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ 
+            duration: 0.5,
+            ease: "easeOut",
+            delay: 0.2
+          }}
+        >
+          {t('hero.subtitle')}
+        </motion.p>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ 
+            duration: 0.5,
+            ease: "easeOut",
+            delay: 0.4
+          }}
+        >
+          <Link href="/puppies">
+            <Button 
+              size="lg"
+              className="bg-[#D4AF37] hover:bg-[#B89530] text-white"
+            >
+              {t('hero.cta')}
+            </Button>
+          </Link>
+        </motion.div>
+      </div>
     </div>
   );
 }
